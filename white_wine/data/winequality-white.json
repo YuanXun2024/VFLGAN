@@ -1,0 +1,84 @@
+{
+  "columns": [
+    {
+      "name": "fixed acidity",
+      "type": "Float",
+      "min": 3.8,
+      "max": 14.2
+    },
+    {
+      "name": "volatile acidity",
+      "type": "Float",
+      "min": 0.08,
+      "max": 1.1
+    },
+    {
+      "name": "citric acid",
+      "type": "Float",
+      "min": 0.0,
+      "max": 1.66
+    },
+    {
+      "name": "residual sugar",
+      "type": "Float",
+      "min": 0.6,
+      "max": 65.8
+    },
+    {
+      "name": "chlorides",
+      "type": "Float",
+      "min": 0.009,
+      "max": 0.346
+    },
+    {
+      "name": "free sulfur dioxide",
+      "type": "Float",
+      "min": 2.0,
+      "max": 289.0
+    },
+    {
+      "name": "total sulfur dioxide",
+      "type": "Float",
+      "min": 9.0,
+      "max": 440.0
+    },
+    {
+      "name": "density",
+      "type": "Float",
+      "min": 0.98711,
+      "max": 1.03898
+    },
+    {
+      "name": "pH",
+      "type": "Float",
+      "min": 2.72,
+      "max": 3.82
+    },
+    {
+      "name": "sulphates",
+      "type": "Float",
+      "min": 0.22,
+      "max": 1.08
+    },
+    {
+      "name": "alcohol",
+      "type": "Float",
+      "min": 8.0,
+      "max": 14.2
+    },
+    {
+      "name": "quality",
+      "type": "Ordinal",
+      "size": 7,
+      "i2s": [
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
+    }
+  ]
+}
