@@ -125,6 +125,8 @@ lambda_gp = 40
 # Configure data loader
 os.makedirs("./data/mnist", exist_ok=True)
 os.makedirs("./generated_data/training", exist_ok=True)
+os.makedirs("./params/WGAN_GP_real_VFL_v2_40", exist_ok=True)
+
 dataloader = torch.utils.data.DataLoader(
     datasets.MNIST(
         "./data/mnist",

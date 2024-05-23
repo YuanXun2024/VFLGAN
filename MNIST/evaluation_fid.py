@@ -12,9 +12,6 @@ import matplotlib.pyplot as plt
 
 
 from AutoEncoder import ConvAutoencoder, Classifier
-from WGAN_GP import Generator as Generator_centric
-from WGAN_GP_VFL import GeneratorBackbone, GeneratorHead
-from WGAN_GP_real_VFL import Generator
 from WGAN_GP_real_VFL_v2 import Generator as Generator_v2
 
 
@@ -73,70 +70,21 @@ def featureReal(modelType ='AE'):
     return act1
 
 
-def featureGenerativeHFL(epoch):
-    AE = ConvAutoencoder().cuda()
-    G_backbone = GeneratorBackbone().cuda()
-    G_head_1 = GeneratorHead().cuda()
-    G_head_2 = GeneratorHead().cuda()
-
-    AE.load_state_dict(torch.load("params/AE/AE_30.pth"))
-    AE.eval()
-
-    backbone = 'backbone_' + str(epoch) + '.pth'
-    head_client1 = 'head_client1_' + str(epoch) + '.pth'
-    head_client2 = 'head_client2_' + str(epoch) + '.pth'
-
-    G_backbone.load_state_dict(torch.load("params/WGAN_GP_VFL/"+backbone))
-    G_head_1.load_state_dict(torch.load("params/WGAN_GP_VFL/"+head_client1))
-    G_head_2.load_state_dict(torch.load("params/WGAN_GP_VFL/"+head_client2))
-    G_backbone.eval()
-    G_head_1.eval()
-    G_head_2.eval()
-
-    act2 = numpy.zeros([60000, 196])
-
-    for i in range(60000//batch_size):
-
-        noise = Tensor(numpy.random.normal(0, 1, (batch_size, 100)))
-
-        fake_imgs_client_1 = G_head_1(G_backbone(noise))
-        fake_imgs_client_2 = G_head_2(G_backbone(noise))
-        fake_imgs = torch.cat((fake_imgs_client_1, fake_imgs_client_2), dim=2)
-        latent = AE(fake_imgs, output='latent')
-        latent = latent.cpu().detach().numpy()
-        act2[batch_size * i:batch_size * (i + 1), :] = latent
-
-    return act2
-
-
-def featureGenerativeVFL(epoch, version=1):
+def featureGenerativeVFL(epoch):
     AE = ConvAutoencoder().cuda()
 
-    if version == 1:
-        G_1 = Generator().cuda()
-        G_2 = Generator().cuda()
-    elif version ==2:
-        G_1 = Generator_v2().cuda()
-        G_2 = Generator_v2().cuda()
-    else:
-        G_1 = Generator_v2().cuda()
-        G_2 = Generator_v2().cuda()
-
+    G_1 = Generator_v2().cuda()
+    G_2 = Generator_v2().cuda()
+   
     AE.load_state_dict(torch.load("params/AE/AE_30.pth"))
     AE.eval()
 
     name_1 = 'G_1_' + str(epoch) + '.pth'
     name_2 = 'G_2_' + str(epoch) + '.pth'
 
-    if version == 1:
-        G_1.load_state_dict(torch.load("params/WGAN_GP_real_VFL/"+name_1))
-        G_2.load_state_dict(torch.load("params/WGAN_GP_real_VFL/"+name_2))
-    elif version == 2:
-        G_1.load_state_dict(torch.load("params/WGAN_GP_real_VFL_v2_40/" + name_1))
-        G_2.load_state_dict(torch.load("params/WGAN_GP_real_VFL_v2_40/" + name_2))
-    else:
-        G_1.load_state_dict(torch.load("params/Adversary_target_0/" + name_1))
-        G_2.load_state_dict(torch.load("params/Adversary_target_0/" + name_2))
+    G_1.load_state_dict(torch.load("params/WGAN_GP_real_VFL_v2_40/" + name_1))
+    G_2.load_state_dict(torch.load("params/WGAN_GP_real_VFL_v2_40/" + name_2))
+    
     G_1.eval()
     G_2.eval()
 
@@ -156,63 +104,18 @@ def featureGenerativeVFL(epoch, version=1):
     return act2
 
 
-def featureGenerativeCentric(epoch):
-    AE = ConvAutoencoder().cuda()
-    G = Generator_centric().cuda()
-
-    AE.load_state_dict(torch.load("params/AE/AE_30.pth"))
-    AE.eval()
-
-    name = 'generator_' + str(epoch) + '.pth'
-
-    G.load_state_dict(torch.load("params/WGAN_GP/" + name))
-    G.eval()
-
-    act2 = numpy.zeros([60000, 196])
-
-    for i in range(60000//batch_size):
-
-        noise = Tensor(numpy.random.normal(0, 1, (batch_size, 100)))
-        fake_imgs = G(noise)
-        latent = AE(fake_imgs, output='latent')
-        latent = latent.cpu().detach().numpy()
-        act2[batch_size * i:batch_size * (i + 1), :] = latent
-
-    return act2
-
-
 if __name__ == "__main__":
     act1 = featureReal(modelType='AE')
-    GenerativeModelList = ['centric', 'HFL', 'VFL', 'VFL_v2']
+    GenerativeModelList = ['VFL_v2']
     # GenerativeModelList = ['VFL_v2']
     fid_c = []; fid_hfl = []; fid_vfl = []; fid_vfl_v2 = []; fid_adv = []
     for model in GenerativeModelList:
         for i in range(1, 61):
-            if model == 'centric':
-                act2 = featureGenerativeCentric(epoch=5*i)
-                fid = calculate_fid(act1, act2)
-                fid_c += [fid]
-            elif model == 'HFL':
-                act2 = featureGenerativeHFL(epoch=5 * i)
-                fid = calculate_fid(act1, act2)
-                fid_hfl += [fid]
-            elif model == 'VFL':
-                act2 = featureGenerativeVFL(epoch=5 * i)
-                fid = calculate_fid(act1, act2)
-                fid_vfl += [fid]
-            elif model == 'VFL_v2':
-                act2 = featureGenerativeVFL(epoch=5 * i, version=2)
-                fid = calculate_fid(act1, act2)
-                fid_vfl_v2 += [fid]
-                # act2 = featureGenerativeVFL(epoch=5 * i, version=3)
-                # fid = calculate_fid(act1, act2)
-                # fid_adv += [fid]
-
-    print('WGAN_GP min fid: ', min(fid_c), fid_c.index(min(fid_c)))
-    print('VertiGAN min fid: ', min(fid_hfl), fid_hfl.index(min(fid_hfl)))
-    print('VFLGAN-base min fid: ', min(fid_vfl), fid_vfl.index(min(fid_vfl)))
+            act2 = featureGenerativeVFL(epoch=5 * i, version=2)
+            fid = calculate_fid(act1, act2)
+            fid_vfl_v2 += [fid]
+                
     print('VFLGAN min fid: ', min(fid_vfl_v2), fid_vfl_v2.index(min(fid_vfl_v2)))
-    # print('adv min fid: ', min(fid_adv), fid_adv.index(min(fid_adv)))
 
     fig = plt.figure()
     plt.xlabel('epoch')
