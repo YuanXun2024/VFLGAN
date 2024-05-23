@@ -24,4 +24,26 @@ python DP_10_GAN_vfl_LOO_37592.py
 ```
 
 ## Auditting scheme
+
+#### Generate synthetic datasets (remember to change the parameter folders)
+```train
+python generate_shadow_data.py
+```
+#### Generate intermediate features (remember to change the parameter folders)
+```train
+python generate_IF_data.py
+```
+
+
 #### Remeber to change 'shadow path' and 'ano_path' in the 'main()' function before running the following instructions
+
+#### MIA on the synthetic dataset
+```train
+python mia.py (correlation feature)
+python mia_naive.py (naive feature)
+```
+#### MIA on the intermediate features
+```train
+python mia_IF_corr.py (correlation feature)
+python mia_IF_naive.py (naive feature)
+```
