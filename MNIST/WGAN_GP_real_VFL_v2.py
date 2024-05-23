@@ -38,6 +38,8 @@ parser.add_argument("--n_critic", type=int, default=5, help="number of training 
 parser.add_argument("--clip_value", type=float, default=0.01, help="lower and upper clip value for disc. weights")
 parser.add_argument("--sample_interval", type=int, default=400, help="interval betwen image samples")
 parser.add_argument("--aggregation_interval", type=int, default=10, help="interval betwen image samples")
+parser.add_argument("--train", action="store_true")
+
 opt = parser.parse_args()
 print(opt)
 
@@ -122,6 +124,7 @@ lambda_gp = 40
 
 # Configure data loader
 os.makedirs("./data/mnist", exist_ok=True)
+os.makedirs("./generated_data/training", exist_ok=True)
 dataloader = torch.utils.data.DataLoader(
     datasets.MNIST(
         "./data/mnist",
@@ -376,13 +379,13 @@ def main():
                     fake_imgs_client_2 = G_2(z)
 
                     fake_imgs = torch.cat((fake_imgs_client_1, fake_imgs_client_2), dim=2)
-                    save_image(fake_imgs.data[:25], "generated_data/images_real_vfl_v2_0.6/%d.png" % batches_done, nrow=5, normalize=True)
+                    save_image(fake_imgs.data[:25], "generated_data/training/%d.png" % batches_done, nrow=5, normalize=True)
 
                 batches_done += opt.n_critic
 
         if (epoch + 1) % 10 == 0:
-            torch.save(G_1.state_dict(), "params/WGAN_GP_real_VFL_v2_50/G_1_%d.pth" % (epoch + 1))
-            torch.save(G_2.state_dict(), "params/WGAN_GP_real_VFL_v2_50/G_2_%d.pth" % (epoch + 1))
+            torch.save(G_1.state_dict(), "params/WGAN_GP_real_VFL_v2_40/G_1_%d.pth" % (epoch + 1))
+            torch.save(G_2.state_dict(), "params/WGAN_GP_real_VFL_v2_40/G_2_%d.pth" % (epoch + 1))
             # torch.save(D_C1.state_dict(), "params/WGAN_GP_real_VFL_v2_1.0_60/D_C1_%d.pth" % (epoch + 1))
             # torch.save(D_C2.state_dict(), "params/WGAN_GP_real_VFL_v2_1.0_60/D_C2_%d.pth" % (epoch + 1))
             # torch.save(D_p1.state_dict(), "params/WGAN_GP_real_VFL_v2_1.0_60/D_p1_%d.pth" % (epoch + 1))
@@ -411,5 +414,7 @@ def inference(epoch=56):
 
 
 if __name__ == "__main__":
-    main()
-    # inference()
+    if opt.train:
+        main()
+    else:
+        inference()
