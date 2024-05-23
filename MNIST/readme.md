@@ -19,11 +19,11 @@ python evaluation_fid.py
 ## DP-VFLGAN
 #### Train dp-vflgan (10,1e-5)-DP
 ```train
-python WGAN_GP_real_VFL_v2.py --train --sigma 0.802
+python DP_WGAN_vfl.py --train --sigma 0.802
 ```
 #### Generate samples of dp-vflgan
 ```inference
-python WGAN_GP_real_VFL_v2.py
+python DP_WGAN_vfl.py
 ```
 #### Draw FID curve of training process of dp-vflgan
 ```FID curve
